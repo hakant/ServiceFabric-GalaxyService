@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Web.Http;
+using Microsoft.ServiceFabric.Services.Client;
 
 namespace GalaxyService.WebApi.Controllers
 {
-    public class ValuesController : ApiController
+    public class StarsController : ApiController
     {
         // GET api/values 
         public IEnumerable<string> Get()

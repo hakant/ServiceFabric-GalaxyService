@@ -9,7 +9,6 @@
     <Parameter Name="Processing_PartitionCount" DefaultValue="1" />
     <Parameter Name="Processing_TargetReplicaSetSize" DefaultValue="3" />
     <Parameter Name="WebApi_InstanceCount" DefaultValue="-1" />
-    <Parameter Name="WebApi_InstanceCount" DefaultValue="-1" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
@@ -36,11 +35,6 @@
       <StatefulService ServiceTypeName="ProcessingType" TargetReplicaSetSize="[Processing_TargetReplicaSetSize]" MinReplicaSetSize="[Processing_MinReplicaSetSize]">
         <UniformInt64Partition PartitionCount="[Processing_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
       </StatefulService>
-    </Service>
-    <Service Name="WebApi">
-      <StatelessService ServiceTypeName="WebApiType" InstanceCount="[WebApi_InstanceCount]">
-        <SingletonPartition />
-      </StatelessService>
     </Service>
     <Service Name="WebApi">
       <StatelessService ServiceTypeName="WebApiType" InstanceCount="[WebApi_InstanceCount]">
