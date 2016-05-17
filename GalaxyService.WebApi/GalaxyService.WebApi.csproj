@@ -98,6 +98,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\StarsInfo.cs" />
+    <Compile Include="Models\StarInsertResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Controllers\StarsController.cs" />
     <Compile Include="OwinCommunicationListener.cs" />
@@ -111,6 +113,12 @@
     <None Include="PackageRoot\ServiceManifest.xml" />
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GalaxyService.Shared\GalaxyService.Shared.csproj">
+      <Project>{f43c5cba-8ca9-4579-a7c5-aa8de6972815}</Project>
+      <Name>GalaxyService.Shared</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

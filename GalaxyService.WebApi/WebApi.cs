@@ -26,7 +26,7 @@ namespace GalaxyService.WebApi
         {
             return new ServiceInstanceListener[]
             {
-                new ServiceInstanceListener(serviceContext => new OwinCommunicationListener(Startup.ConfigureApp, serviceContext, ServiceEventSource.Current, "ServiceEndpoint"))
+                new ServiceInstanceListener(serviceContext => new OwinCommunicationListener(Startup.ConfigureApp, serviceContext, ServiceEventSource.Current, "WebApiServiceEndpoint"))
             };
         }
     }
