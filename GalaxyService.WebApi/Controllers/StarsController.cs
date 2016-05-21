@@ -16,7 +16,7 @@ namespace GalaxyService.WebApi.Controllers
 {
     public class StarsController : ApiController
     {
-        private static readonly Uri AlphabetServiceUri = new Uri(@"fabric:/GalaxyService/Processing");
+        private static readonly Uri GalaxyServiceUri = new Uri(@"fabric:/GalaxyService/Processing");
         private readonly ServicePartitionResolver _servicePartitionResolver = ServicePartitionResolver.GetDefault();
         private readonly HttpClient _httpClient = new HttpClient();
 
@@ -33,7 +33,7 @@ namespace GalaxyService.WebApi.Controllers
             // For a complete solution, a retry mechanism is required.
             // For more information, see http://aka.ms/servicefabricservicecommunication
             ResolvedServicePartition partition =
-                await _servicePartitionResolver.ResolveAsync(AlphabetServiceUri, partitionKey, CancellationToken.None);
+                await _servicePartitionResolver.ResolveAsync(GalaxyServiceUri, partitionKey, CancellationToken.None);
 
             // Use anything but the primary replica, this is a read-only operation
             var secondaryEndpoints =
@@ -75,7 +75,7 @@ namespace GalaxyService.WebApi.Controllers
             // For a complete solution, a retry mechanism is required.
             // For more information, see http://aka.ms/servicefabricservicecommunication
             ResolvedServicePartition partition =
-                await _servicePartitionResolver.ResolveAsync(AlphabetServiceUri, partitionKey, CancellationToken.None);
+                await _servicePartitionResolver.ResolveAsync(GalaxyServiceUri, partitionKey, CancellationToken.None);
 
             // Get the primary replica because we're going to write to state
             ResolvedServiceEndpoint ep = partition.Endpoints.First(e => e.Role == ServiceEndpointRole.StatefulPrimary);

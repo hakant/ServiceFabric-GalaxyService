@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalaxyService.Shared", "GalaxyService.Shared\GalaxyService.Shared.csproj", "{F43C5CBA-8CA9-4579-A7C5-AA8DE6972815}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataGenerator", "DataGenerator\DataGenerator.csproj", "{F5A037C0-1B1C-4353-B01A-F11CCC07E5A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,14 @@ Global
 		{F43C5CBA-8CA9-4579-A7C5-AA8DE6972815}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F43C5CBA-8CA9-4579-A7C5-AA8DE6972815}.Release|x64.ActiveCfg = Release|Any CPU
 		{F43C5CBA-8CA9-4579-A7C5-AA8DE6972815}.Release|x64.Build.0 = Release|Any CPU
+		{F5A037C0-1B1C-4353-B01A-F11CCC07E5A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5A037C0-1B1C-4353-B01A-F11CCC07E5A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5A037C0-1B1C-4353-B01A-F11CCC07E5A9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F5A037C0-1B1C-4353-B01A-F11CCC07E5A9}.Debug|x64.Build.0 = Debug|Any CPU
+		{F5A037C0-1B1C-4353-B01A-F11CCC07E5A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5A037C0-1B1C-4353-B01A-F11CCC07E5A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5A037C0-1B1C-4353-B01A-F11CCC07E5A9}.Release|x64.ActiveCfg = Release|Any CPU
+		{F5A037C0-1B1C-4353-B01A-F11CCC07E5A9}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
