@@ -1,58 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Fabric;
 using System.Linq;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+using GalaxyService.Shared.Interfaces;
 using GalaxyService.Shared.Models;
 using GalaxyService.WebApi.Models;
 using Microsoft.ServiceFabric.Services.Client;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Microsoft.ServiceFabric.Services.Communication.Client;
+using Microsoft.ServiceFabric.Services.Remoting.Client;
 
 namespace GalaxyService.WebApi.Controllers
 {
     public class StarsController : ApiController
     {
         private static readonly Uri GalaxyServiceUri = new Uri(@"fabric:/GalaxyService/Processing");
-        private readonly ServicePartitionResolver _servicePartitionResolver = ServicePartitionResolver.GetDefault();
-        private readonly HttpClient _httpClient = new HttpClient();
 
         // GET api/values 
         public async Task<StarsInfo> Get(char c)
         {
             ServicePartitionKey partitionKey = new ServicePartitionKey(char.ToUpper(c) - 'A');
 
-            // This contacts the Service Fabric Naming Services to get the addresses of the replicas of the processing service 
-            // for the partition with the partition key generated above. 
-            // Note that this gets the most current addresses of the partition's replicas,
-            // however it is possible that the replicas have moved between the time this call is made and the time that the address is actually used
-            // a few lines below.
-            // For a complete solution, a retry mechanism is required.
-            // For more information, see http://aka.ms/servicefabricservicecommunication
-            ResolvedServicePartition partition =
-                await _servicePartitionResolver.ResolveAsync(GalaxyServiceUri, partitionKey, CancellationToken.None);
+            var galaxyServiceClient = ServiceProxy.Create<IGalaxyStatefulService>(
+                GalaxyServiceUri, partitionKey, TargetReplicaSelector.RandomSecondaryReplica
+                );
 
-            // Use anything but the primary replica, this is a read-only operation
-            var secondaryEndpoints =
-                partition.Endpoints
-                    .Where(e => e.Role == ServiceEndpointRole.StatefulSecondary)
-                    .ToArray();
+            var result = await galaxyServiceClient.GetAllStarsAsync();
 
-            var randomEndpoint = secondaryEndpoints[new Random().Next(secondaryEndpoints.Length)];
-
-            var addresses = JObject.Parse(randomEndpoint.Address);
-            var secondaryReplicaAddress = (string)addresses["Endpoints"].First();
-
-            var result = await _httpClient.GetStringAsync(secondaryReplicaAddress);
+            var proxy = (IServiceProxy) galaxyServiceClient;
 
             return new StarsInfo
             {
-                EndpointRole = randomEndpoint.Role.ToString(),
-                EndpointAddress = secondaryReplicaAddress,
-                Stars = JsonConvert.DeserializeObject<IEnumerable<StarEntity>>(result)
+                EndpointRole = proxy.ServicePartitionClient.TargetReplicaSelector.ToString(),
+                EndpointAddress = proxy.ServicePartitionClient.ServiceUri.ToString(),
+                Stars = result
             };
         }
 
@@ -67,33 +47,21 @@ namespace GalaxyService.WebApi.Controllers
             char partitionInput = galaxyName.First();
             var partitionKey = new ServicePartitionKey(char.ToUpper(partitionInput) - 'A');
 
-            // This contacts the Service Fabric Naming Services to get the addresses of the replicas of the processing service 
-            // for the partition with the partition key generated above. 
-            // Note that this gets the most current addresses of the partition's replicas,
-            // however it is possible that the replicas have moved between the time this call is made and the time that the address is actually used
-            // a few lines below.
-            // For a complete solution, a retry mechanism is required.
-            // For more information, see http://aka.ms/servicefabricservicecommunication
-            ResolvedServicePartition partition =
-                await _servicePartitionResolver.ResolveAsync(GalaxyServiceUri, partitionKey, CancellationToken.None);
+            var galaxyServiceClient = ServiceProxy.Create<IGalaxyStatefulService>(
+                GalaxyServiceUri, partitionKey, TargetReplicaSelector.PrimaryReplica
+                );
 
-            // Get the primary replica because we're going to write to state
-            ResolvedServiceEndpoint ep = partition.Endpoints.First(e => e.Role == ServiceEndpointRole.StatefulPrimary);
+            var result = await galaxyServiceClient.AddStarAsync(star);
 
-            JObject addresses = JObject.Parse(ep.Address);
-            string primaryReplicaAddress = (string)addresses["Endpoints"].First();
-
-            UriBuilder primaryReplicaUriBuilder = new UriBuilder(primaryReplicaAddress);
-
-            var result = await _httpClient.PostAsJsonAsync(primaryReplicaUriBuilder.Uri, star);
+            var proxy = (IServiceProxy)galaxyServiceClient;
 
             return new StarInsertResult
             {
-                Result = await result.Content.ReadAsStringAsync(),
+                Result = result,
                 PartitionKey = partitionKey.Value.ToString(),
                 InputValue = galaxyName,
-                ServicePartitionId = partition.Info.Id.ToString(),
-                ServiceReplicaAddress = primaryReplicaAddress
+                ServicePartitionId = string.Empty,
+                ServiceReplicaAddress = proxy.ServicePartitionClient.ServiceUri.ToString()
             };
         }
     }
