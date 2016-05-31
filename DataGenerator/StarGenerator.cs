@@ -29,8 +29,6 @@ namespace DataGenerator
                 {
                     yield return new StarEntity
                     {
-                        Id = Guid.NewGuid().ToString(),
-                        GalaxyId = galaxy.Id,
                         GalaxyName = galaxy.Name,
                         StarName = $"S_{i + 1}",
                         Data = GenerateRandomProperties()
