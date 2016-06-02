@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 using GalaxyService.Shared.Models;
+using Newtonsoft.Json;
 
 namespace DataGenerator
 {
@@ -15,8 +17,10 @@ namespace DataGenerator
         /// </summary>
         private static readonly string EndpointUri = ConfigurationManager.AppSettings["ServiceEndPointUri"];
 
-        private readonly StarGenerator _starGenerator = new StarGenerator(5, 50);
-        private const int NumberOfGalaxies = 50;
+        private static readonly Dictionary<string, int> PartitionCounts = new Dictionary<string, int>();
+
+        private readonly StarGenerator _starGenerator = new StarGenerator(50, 100);
+        private const int NumberOfGalaxies = 250;
 
         HttpClient _httpClient = new HttpClient();
         
@@ -27,6 +31,7 @@ namespace DataGenerator
             {
                 Program p = new Program();
                 p.GenerateDataAndSave().Wait();
+                ReportPartitionCounts();
             }
             catch (Exception e)
             {
@@ -37,6 +42,15 @@ namespace DataGenerator
             {
                 Console.WriteLine("End. Press any key to exit.");
                 Console.ReadKey();
+            }
+        }
+
+        private static void ReportPartitionCounts()
+        {
+            WriteToConsole("Reporting Sharding Stats:");
+            foreach (var partitionCount in PartitionCounts)
+            {
+                WriteToConsole($"{partitionCount.Key}: {partitionCount.Value}");
             }
         }
 
@@ -61,6 +75,17 @@ namespace DataGenerator
         private async Task PushToTheService(StarEntity star)
         {
             var result = await _httpClient.PostAsJsonAsync(EndpointUri, star);
+            var response = JsonConvert.DeserializeObject<StarInsertResult>(await result.Content.ReadAsStringAsync());
+
+            CountPartition(response.ServicePartitionId);
+        }
+
+        private static void CountPartition(string partitionId)
+        {
+            if (PartitionCounts.ContainsKey(partitionId))
+                PartitionCounts[partitionId] = PartitionCounts[partitionId] + 1;
+            else
+                PartitionCounts.Add(partitionId, 1);
         }
         
         /// <summary>

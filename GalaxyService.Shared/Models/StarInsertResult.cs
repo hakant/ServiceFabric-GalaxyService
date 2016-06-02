@@ -1,4 +1,4 @@
-﻿namespace GalaxyService.WebApi.Models
+﻿namespace GalaxyService.Shared.Models
 {
     public class StarInsertResult
     {

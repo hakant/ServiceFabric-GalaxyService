@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using GalaxyService.Shared.Interfaces;
 using GalaxyService.Shared.Models;
-using GalaxyService.WebApi.Models;
+using GalaxyService.WebApi.Sharding;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
@@ -16,24 +17,25 @@ namespace GalaxyService.WebApi.Controllers
         private static readonly Uri GalaxyServiceUri = new Uri(@"fabric:/GalaxyService/Processing");
 
         // GET api/values 
-        public async Task<StarsInfo> Get(char c)
+        public async Task<StarInfo> Get(string galaxyName, string starName)
         {
-            ServicePartitionKey partitionKey = new ServicePartitionKey(char.ToUpper(c) - 'A');
+            ServicePartitionKey partitionKey = new ServicePartitionKey(PartitionKeyGenerator.Generate(galaxyName));
 
             var galaxyServiceClient = ServiceProxy.Create<IGalaxyStatefulService>(
                 GalaxyServiceUri, partitionKey, TargetReplicaSelector.RandomSecondaryReplica
                 );
 
-            var result = await galaxyServiceClient.GetAllStarsAsync();
+            var proxy = (IServiceProxy)galaxyServiceClient;
 
-            var proxy = (IServiceProxy) galaxyServiceClient;
+            StarInfo result;
 
-            return new StarsInfo
-            {
-                EndpointRole = proxy.ServicePartitionClient.TargetReplicaSelector.ToString(),
-                EndpointAddress = proxy.ServicePartitionClient.ServiceUri.ToString(),
-                Stars = result
-            };
+            if (string.IsNullOrEmpty(starName))
+                result = await galaxyServiceClient.GetAllStarsAsync();
+            else
+                result = await galaxyServiceClient.GetStarAsync(galaxyName, starName);
+
+            result.EndpointRole = proxy.ServicePartitionClient.TargetReplicaSelector.ToString();
+            return result;
         }
 
         // POST api/values 
@@ -41,11 +43,10 @@ namespace GalaxyService.WebApi.Controllers
         {
             var galaxyName = star.GalaxyName;
 
-            // The partitioning scheme of the processing service is a range of integers from 0 - 25.
-            // This generates a partition key within that range by converting the first letter of the input name
-            // into its numerica position in the alphabet.
-            char partitionInput = galaxyName.First();
-            var partitionKey = new ServicePartitionKey(char.ToUpper(partitionInput) - 'A');
+            ServicePartitionKey partitionKey = new ServicePartitionKey(PartitionKeyGenerator.Generate(galaxyName));
+
+            var partition = await ServicePartitionResolver.GetDefault()
+                .ResolveAsync(GalaxyServiceUri, partitionKey, CancellationToken.None);
 
             var galaxyServiceClient = ServiceProxy.Create<IGalaxyStatefulService>(
                 GalaxyServiceUri, partitionKey, TargetReplicaSelector.PrimaryReplica
@@ -60,7 +61,7 @@ namespace GalaxyService.WebApi.Controllers
                 Result = result,
                 PartitionKey = partitionKey.Value.ToString(),
                 InputValue = galaxyName,
-                ServicePartitionId = string.Empty,
+                ServicePartitionId = partition.Info.Id.ToString(),
                 ServiceReplicaAddress = proxy.ServicePartitionClient.ServiceUri.ToString()
             };
         }

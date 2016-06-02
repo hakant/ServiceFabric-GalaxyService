@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Fabric;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GalaxyService.Shared.Interfaces;
@@ -46,7 +47,7 @@ namespace GalaxyService.Processing
 
             using (ITransaction tx = StateManager.CreateTransaction())
             {
-                var addResult = await dictionary.TryAddAsync(tx, star.StarName.ToUpperInvariant(), star);
+                var addResult = await dictionary.TryAddAsync(tx, star.GalaxyName.ToUpperInvariant() + star.StarName.ToUpperInvariant(), star);
 
                 await tx.CommitAsync();
 
@@ -54,14 +55,20 @@ namespace GalaxyService.Processing
             }
         }
 
-        public async Task<IEnumerable<StarEntity>> GetAllStarsAsync()
+        public async Task<StarInfo> GetAllStarsAsync()
         {
             var stars = new List<StarEntity>();
 
             var result = await StateManager.TryGetAsync<IReliableDictionary<string, StarEntity>>("stars");
 
             if (!result.HasValue)
-                return stars;
+            {
+                return new StarInfo
+                {
+                    PartitionId = this.Partition.PartitionInfo.Id.ToString(),
+                    Stars = stars
+                };
+            }
 
             var dictionary = result.Value;
 
@@ -79,7 +86,45 @@ namespace GalaxyService.Processing
                 }
             }
 
-            return stars;
+            return new StarInfo
+            {
+                PartitionId = this.Partition.PartitionInfo.Id.ToString(),
+                Stars = stars
+            };
+        }
+
+        public async Task<StarInfo> GetStarAsync(string galaxyName, string starName)
+        {
+            var stars = new List<StarEntity>();
+            var result = await StateManager.TryGetAsync<IReliableDictionary<string, StarEntity>>("stars");
+
+            if (!result.HasValue)
+            {
+                return new StarInfo
+                {
+                    PartitionId = this.Partition.PartitionInfo.Id.ToString(),
+                    Stars = stars
+                };
+            }
+
+            var dictionary = result.Value;
+
+            using (ITransaction tx = StateManager.CreateTransaction())
+            {
+                var star = await dictionary.TryGetValueAsync(tx, galaxyName.ToUpperInvariant() + starName.ToUpperInvariant(),
+                    LockMode.Default);
+
+                if (star.HasValue)
+                {
+                    stars.Add(star.Value);
+                }
+            }
+
+            return new StarInfo
+            {
+                PartitionId = this.Partition.PartitionInfo.Id.ToString(),
+                Stars = stars
+            };
         }
     }
 }

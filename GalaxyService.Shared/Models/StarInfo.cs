@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
-using GalaxyService.Shared.Models;
 
-namespace GalaxyService.WebApi.Models
+namespace GalaxyService.Shared.Models
 {
-    public class StarsInfo
+    public class StarInfo
     {
         public string EndpointRole { get; set; }
 
-        public string EndpointAddress { get; set; }
+        public string PartitionId { get; set; }
 
         public IEnumerable<StarEntity> Stars { get; set; }
     }
