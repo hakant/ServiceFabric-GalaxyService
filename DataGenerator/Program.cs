@@ -22,7 +22,7 @@ namespace DataGenerator
         private readonly StarGenerator _starGenerator = new StarGenerator(50, 100);
         private const int NumberOfGalaxies = 250;
 
-        HttpClient _httpClient = new HttpClient();
+        readonly HttpClient _httpClient = new HttpClient();
         
 
         static void Main(string[] args)
