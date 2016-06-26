@@ -8,7 +8,7 @@ namespace GalaxyService.Shared.Interfaces
     public interface IGalaxyStatefulService : IService
     {
         Task<string> AddStarAsync(StarEntity star);
-        Task<StarInfo> GetAllStarsAsync();
+        Task<StarInfo> GetAllStarsAsync(string galaxyName);
         Task<StarInfo> GetStarAsync(string galaxyName, string starName);
     }
 }

@@ -30,7 +30,7 @@ namespace GalaxyService.WebApi.Controllers
             StarInfo result;
 
             if (string.IsNullOrEmpty(starName))
-                result = await galaxyServiceClient.GetAllStarsAsync();
+                result = await galaxyServiceClient.GetAllStarsAsync(galaxyName);
             else
                 result = await galaxyServiceClient.GetStarAsync(galaxyName, starName);
 

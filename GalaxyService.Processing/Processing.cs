@@ -55,7 +55,7 @@ namespace GalaxyService.Processing
             }
         }
 
-        public async Task<StarInfo> GetAllStarsAsync()
+        public async Task<StarInfo> GetAllStarsAsync(string galaxyName)
         {
             var stars = new List<StarEntity>();
 
@@ -77,12 +77,12 @@ namespace GalaxyService.Processing
                 var values = await dictionary.CreateEnumerableAsync(tx, EnumerationMode.Unordered);
                 var enumerator = values.GetAsyncEnumerator();
 
-                var cont = await enumerator.MoveNextAsync(CancellationToken.None);
-
-                while (cont)
+                while (await enumerator.MoveNextAsync(CancellationToken.None))
                 {
-                    stars.Add(enumerator.Current.Value);
-                    cont = await enumerator.MoveNextAsync(CancellationToken.None);
+                    if (enumerator.Current.Key.StartsWith(galaxyName.ToUpperInvariant()))
+                    {
+                        stars.Add(enumerator.Current.Value);
+                    }
                 }
             }
 
